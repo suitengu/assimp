@@ -76,6 +76,8 @@ using namespace Util;
 
 #define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
 
+static constexpr maxRecursionDepth = 256;
+
 static void correctRootTransform(const aiScene *scene) {
     if (scene == nullptr) {
         return;
@@ -208,6 +210,7 @@ void FBXConverter::ConvertRootNode() {
     std::string unique_name;
     GetUniqueName("RootNode", unique_name);
     mSceneOut->mRootNode->mName.Set(unique_name);
+    mRecursionDepth = 0;
 
     // root has ID 0
     ConvertNodes(0L, mSceneOut->mRootNode, mSceneOut->mRootNode);
@@ -262,6 +265,12 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 
     std::vector<PotentialNode> nodes_chain;
     std::vector<PotentialNode> post_nodes_chain;
+
+    // guard against stack exhaustion from deeply nested or malformed input
+    if (++mRecursionDepth > maxRecursionDepth) {
+	--mRecursionDepth;
+	return;
+    }
 
     for (const Connection *con : conns) {
         // ignore object-property links

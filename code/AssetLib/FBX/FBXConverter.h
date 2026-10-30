@@ -465,6 +465,7 @@ private:
     aiScene* const mSceneOut;
     const FBX::Document& doc;
     bool mRemoveEmptyBones;
+    size_t mRecursionDepth{0};
     static void BuildBoneList(aiNode *current_node, const aiNode *root_node, const aiScene *scene,
                              std::vector<aiBone*>& bones);
 
