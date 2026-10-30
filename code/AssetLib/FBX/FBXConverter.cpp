@@ -76,7 +76,7 @@ using namespace Util;
 
 #define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
 
-static constexpr maxRecursionDepth = 256;
+static constexpr size_t maxRecursionDepth = 256;
 
 static void correctRootTransform(const aiScene *scene) {
     if (scene == nullptr) {
@@ -268,8 +268,9 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 
     // guard against stack exhaustion from deeply nested or malformed input
     if (++mRecursionDepth > maxRecursionDepth) {
-	--mRecursionDepth;
-	return;
+		FBXImporter::LogError("Node nesting depth exceeded the max limit of ", maxRecursionDepth);
+	    --mRecursionDepth;
+	    return;
     }
 
     for (const Connection *con : conns) {
